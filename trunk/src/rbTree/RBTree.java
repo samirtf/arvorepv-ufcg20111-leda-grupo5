@@ -39,7 +39,7 @@ class RBNode<K extends Comparable<K>, V extends Comparable<V>> {
 	public boolean isLeaf() {
 		boolean resp = false;
 		if (!isEmpty()) {
-			resp = this.getFilhoEsquerdo().isEmpyt() && this.getFilhoDireito().isEmpyt();
+			resp = this.getFilhoEsquerdo().isEmpty() && this.getFilhoDireito().isEmpty();
 		}
 		return resp;
 	}
