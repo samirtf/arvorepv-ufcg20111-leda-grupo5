@@ -94,7 +94,104 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 	}
 
 	protected void fixUp() {
-		// TODO
+		if(this.getCor().equals(PVCores.VERMELHO) && this.getPai().getCor().equals(PVCores.VERMELHO)){// SE EU E MEU SOMOS VERMELHOS - "PERNA ESTICADA"
+			if(this.getPai() == this.getPai().getPai().getFilhoEsquerdo()){ // SE MEU PAI FOR FILHO ESQUERDO DO MEU AVO 
+				if(this.getPai().getPai().getFilhoDireito().getCor().equals(PVCores.VERMELHO)){ //E MEU TIO FOR FOR VERMELHO
+					this.getPai().mudaDeCor();
+					this.getPai().getPai().mudaDeCor();
+					this.getPai().getPai().getFilhoDireito().mudaDeCor();
+					//SE O AVO FOR RAIZ DEVE SER PRETO
+					if(this.getPai().getPai().getPai() == null){// PAI DO AVO NULL - RAIZ
+						this.getPai().getPai().setCor(PVCores.PRETO);// ATUALIZA PARA PRETO
+					}
+				}
+			}
+		}
+			
+//				}else if( ((this == this.parent.right) && (this.parent == this.parent.parent.left))
+//						|| ((this == this.parent.left) && (this.parent == this.parent.parent.right))) {//CASO 2 TIO PRETO E FILHO PAI E AVO FORMAM JOELHO
+//					if((this == this.parent.right) && (this.parent == this.parent.parent.left)){
+//							this.parent.rotateLeft();
+//							//this era o pivot que teve o pai modificado para o avo (por causa da rotacao)
+//							this.parent.left.left.fixUp();
+//					}
+//					if((this == this.parent.left) && (this.parent == this.parent.parent.right)){
+//							this.parent.rotateRight();
+//							this.parent.parent.right.fixUp();
+//					}
+//					
+//					
+//				}else if( ((this == this.parent.left) && (this.parent == this.parent.parent.left))
+//						  || ((this == this.parent.right) && (this.parent == this.parent.parent.right))){//CASO 3 TIO PRETO E FILHO, PAI E AVO FORMAM LINHA RETA
+//					if(((this == this.parent.left) && (this.parent == this.parent.parent.left))){
+//						this.parent.parent.changeColor();
+//						this.parent.changeColor();
+//						this.parent.parent.rotateRight();
+//						
+//					}
+//					if(((this == this.parent.right) && (this.parent == this.parent.parent.right))){
+//						this.parent.parent.changeColor();
+//						this.parent.changeColor();
+//						this.parent.parent.rotateLeft();
+//					}
+//				}
+//			}else{ 
+//				if(this.parent.parent.left.color.equals(Color.RED)){ // ESPELHO DO CASO 1 - TIO VERMELHO SENDO FILHO A ESQUERDA DO AVO
+//					this.parent.changeColor();
+//					this.parent.parent.changeColor();
+//					//se o avor for raiz deve deixar a cor preta
+//					if(this.parent.parent.parent == null){
+//						this.parent.parent.setColor(Color.BLACK);
+//					}
+//					this.parent.parent.left.changeColor();
+//				}else if( ((this == this.parent.right) && (this.parent == this.parent.parent.left))
+//						|| ((this == this.parent.left) && (this.parent == this.parent.parent.right))) {//CASO 2 TIO PRETO E FILHO PAI E AVO FORMAM JOELHO
+//					if((this == this.parent.right) && (this.parent == this.parent.parent.left)){
+//							this.parent.rotateLeft();
+//							this.parent.left.fixUp();
+//					}
+//					if((this == this.parent.left) && (this.parent == this.parent.parent.right)){
+//							this.parent.rotateRight();
+//							this.parent.right.fixUp();
+//					}
+//					//como recai sempre no caso 3 chama recursivamente o metodo
+//					//fixUp();
+//				}else if( ((this == this.parent.left) && (this.parent == this.parent.parent.left))
+//						  || ((this == this.parent.right) && (this.parent == this.parent.parent.right))){//CASO 3 TIO PRETO E FILHO, PAI E AVO FORMAM LINHA RETA
+//					if(((this == this.parent.left) && (this.parent == this.parent.parent.left))){
+//						this.parent.parent.changeColor();
+//						this.parent.changeColor();
+//						this.parent.parent.rotateRight();
+//						
+//					}
+//					if(((this == this.parent.right) && (this.parent == this.parent.parent.right))){
+//						//as cores sao modificadas antes porque o avo eh rotacionado
+//						this.parent.parent.changeColor();
+//						this.parent.changeColor();
+//						this.parent.parent.rotateLeft();
+//						
+//					}
+//				}
+//			}
+//		}
+//		//quando o fixUp terminar os tres casos ele deve ser apicado ao avo para consertar
+//		//problemas que eventualmente surjam por causa da recursao. E o fixUp deve ser aplicado
+//		//ao avo se ele nao for o root da arvore.
+//		if(this.parent != null){
+//			if(this.parent.parent != null){
+//				if(this.parent.parent.parent != null){
+//					this.parent.parent.fixUp();
+//				}
+//			}
+//		}
+	}
+
+	private void mudaDeCor() {
+		if(this.getCor().equals(PVCores.PRETO)){
+			this.setCor(PVCores.VERMELHO);
+		}else{
+			this.setCor(PVCores.PRETO);
+		}		
 	}
 
 	protected RBNode<K, V> leftRotation() {
@@ -210,7 +307,26 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public void insert(K key, V value) throws ADTOverflowException {
-		// TODO Auto-generated method stub
+		if (isEmpty()) {
+			this.setChave(key);
+			this.setDadoSatelite(value);
+			if (this.getPai() != null) {
+				this.setCor(PVCores.VERMELHO);
+			}
+			this.setFilhoEsquerdo(new RBTreeImpl<K, V>());
+			this.getFilhoEsquerdo().setPai(this);
+			this.setFilhoDireito(new RBTreeImpl<K, V>());
+			this.getFilhoDireito().setPai(this);
+			fixUp();
+		} else {
+			if (!this.getChave().equals(key)) {
+				if (key.compareTo(this.getChave()) < 0) {
+					this.getFilhoEsquerdo().insert(key, value);
+				} else {
+					this.getFilhoDireito().insert(key, value);
+				}
+			}
+		}
 
 	}
 
@@ -270,8 +386,11 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		int resp = 0;
+		if(!isEmpty()){
+			resp = 1 + this.getFilhoEsquerdo().size() + this.getFilhoDireito().size();
+		}
+		return resp;
 	}
 
 	@Override
@@ -372,5 +491,49 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 	public void setPai(RBTreeImpl<K, V> novoPai) {
 		raiz.setPai(novoPai);
 	}
+	
+	
+	public static void main(String[] args) throws ADTOverflowException {
+		RBTreeImpl<Integer, Integer> t = new RBTreeImpl<Integer, Integer>();
+		//RBTreeImpl<Integer, Integer> t1 = new RBTreeImpl<Integer, Integer>();
+		
+		boolean ok = t.checkProperties();
+		//t1.verifyProperties();
+		//t.insert(1, 1);
+		//t.insert(14, 14);
+		//t.insert(25, 25);
+		//t.print();
+		
+		for (int i = 21; i > -1; i--) {
+			t.insert(i, i);
+			//t1.insert1(i, i);
+			ok = t.checkProperties();
+			//t1.verifyProperties();
+			System.out.println("T :: nos:" + t.size() + " - altura:" + t.height() + "- RB(" + ok + ")");
+			//System.out.println("T1 :: nos:" + t.size() + " - altura:" + t.height() + "- RB(" + ok + ")");
+		}
+		
+		//t.insert(50, 50);
+		//t1.insert1(50, 50);
+		
+		for (int i = 0; i < 50; i++) {
+			t.insert(i, i);
+			//t1.insert1(i, i);
+			//t.print();
+			ok = t.checkProperties();
+			//t1.verifyProperties();
+			System.out.println("T :: nos:" + t.size() + " - altura:" + t.height() + "- RB(" + ok + ")");
+			//System.out.println("T1 :: nos:" + t.size() + " - altura:" + t.height() + "- RB(" + ok + ")");
+		}
+		System.out.println("ARVORE T");
+		t.toString();
+		//System.out.println("ARVORE T1");
+		//t1.print();
+		
+		System.out.println("----- PRE-ORDEM--------------");
+		System.out.println(t.preOrder());
+		
+	}
+    
 
 }
