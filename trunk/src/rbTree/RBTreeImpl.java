@@ -1,7 +1,7 @@
 package rbTree;
 
-import eda.util.ADTOverflowException;
-import eda.util.ADTUnderflowException;
+import util.ADTOverflowException;
+import util.ADTUnderflowException;
 
 /**
  * Estrutura representa uma arvore PV implementada de forma nao recursiva. 
