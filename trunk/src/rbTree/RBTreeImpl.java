@@ -20,15 +20,9 @@ import util.ADTUnderflowException;
  * importancia para a balancear a arvore. Tente fazer de forma parecida com a splay 
  * tree mostrada em sala.
  */
-public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
-		implements RBTree<K, V> {
+public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>> implements RBTree<K, V> {
 	
-	private K chave;
-	private V dadoSatelite;
-	private RBTreeImplementada<K, V> filhoEsquerdo;
-	private RBTreeImplementada<K, V> filhoDireito;
-	private RBTreeImplementada<K, V> pai;
-	private Cores color = Cores.PRETO;
+	RBNode<K, V> raiz = new RBNode<K, V>();
 
 	//verify all properties
 	protected boolean checkProperties(){
@@ -83,7 +77,31 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 	}
 
 	protected RBNode<K,V> leftRotation(){
-		//TODO
+//		RBTreeImpl<K,V> raiz = this;
+//		RBTreeImpl<K,V> pivo = this.right;
+//		RBTreeImpl<K,V> paiRoot = raiz.parent;
+//		
+//		RBTreeImplementada<K,V> novoFilhoEsquerdaRoot = new RBTreeImplementada<K,V>();
+//		novoFilhoEsquerdaRoot.setSatteliteData(root.getSatteliteData());
+//		novoFilhoEsquerdaRoot.setKey(root.getKey());
+//		novoFilhoEsquerdaRoot.setColor(root.getColor());
+//		novoFilhoEsquerdaRoot.setLeft(root.getLeft());
+//		novoFilhoEsquerdaRoot.left.parent = novoFilhoEsquerdaRoot;
+//		novoFilhoEsquerdaRoot.setRight(pivot.getLeft());
+//		novoFilhoEsquerdaRoot.right.parent = novoFilhoEsquerdaRoot;
+//		novoFilhoEsquerdaRoot.setParent(root);
+//		root.setLeft(novoFilhoEsquerdaRoot);
+//		root.setSatteliteData(pivot.getSatteliteData());
+//		root.setKey(pivot.getKey());
+//		root.setColor(pivot.getColor());
+//		//se for o root da arvore entao no pode ser vermelho
+//		if(root.parent == null && root.color.equals(Color.RED)){
+//			root.setColor(Color.BLACK);
+//		}
+//		root.setRight(pivot.getRight());
+//		root.right.setParent(root);
+//		root.setParent(paiRoot);
+//		pivot.parent = root.parent;
 		return null;
 	}
 
@@ -94,7 +112,15 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public int height() {
-		// TODO Auto-generated method stub
+//		int result = -1;
+//		if (!raiz.isEmpty()) {
+//			if (isLeaf()) {
+//				result = 0;
+//			} else {
+//				result = 1 + greater(left.height(), right.height());
+//			}
+//		}
+//		return result;
 		return 0;
 	}
 
@@ -181,9 +207,13 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public boolean isEmpyt() {		
+		return raiz.isEmpty();
+	}
+	
+	public String toString() {
+		return raiz.toString();
+	}
 
-}
-
-enum Color {
-	RED(1), BLACK(2)
 }
