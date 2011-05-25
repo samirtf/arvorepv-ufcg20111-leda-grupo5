@@ -51,22 +51,6 @@ class RBNode<K extends Comparable<K>, V extends Comparable<V>> {
 	 */
 	@Override
 	public String toString() {
-//		if (isEmpty()) {
-//			System.out.println("<empty tree>");
-//			return;
-//		}
-//		if (!this.getFilhoDireito().isEmpty()) {
-//			right.print(indent + INDENT_STEP);
-//		}
-//		for (int i = 0; i < indent; i++)
-//			System.out.print(" ");
-//		if (this.color == Color.BLACK)
-//			System.out.println(this.key);
-//		else
-//			System.out.println("<" + this.key + ">");
-//		if (!left.isEmpty()) {
-//			left.print(indent + INDENT_STEP);
-//		}
 		StringBuilder resp = new StringBuilder();
 		if (!isEmpty()) {
 			if (this.getCor().equals(PVCores.PRETO)) {
@@ -76,8 +60,6 @@ class RBNode<K extends Comparable<K>, V extends Comparable<V>> {
 			}
 			resp.append(this.getFilhoEsquerdo().toString());
 			resp.append(this.getFilhoDireito().toString());
-		} else {
-			resp.append("<arvore vazia>");
 		}
 		return resp.toString();
 	}
