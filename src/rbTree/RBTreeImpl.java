@@ -694,28 +694,28 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 		System.out.println("ARVORE T");
 		//for (int i = 0; i < 20; i++) {
 
-			System.out.println("sucessor: " +t.successor(0));
-			System.out.println("sucessor: " +t.successor(1));
-			System.out.println("sucessor: " +t.successor(2));
-			System.out.println("sucessor: " +t.successor(3));
-			System.out.println("sucessor: " +t.successor(4));
-			System.out.println("sucessor: " +t.successor(5));
-			System.out.println("sucessor: " +t.successor(6));
-			System.out.println("sucessor: " +t.successor(7));
-			System.out.println("sucessor: " +t.successor(8));
-			System.out.println("sucessor: " +t.successor(9));
-			System.out.println("sucessor: " +t.successor(10));
-			System.out.println("sucessor: " +t.successor(11));
-			System.out.println("sucessor: " +t.successor(12));
-			System.out.println("sucessor: " +t.successor(13));
-			System.out.println("sucessor: " +t.successor(14));
-			System.out.println("sucessor: " +t.successor(15));
-			System.out.println("sucessor: " + t.successor(16));
-			System.out.println("sucessor: " + t.successor(17));
-			System.out.println("sucessor: " + t.successor(18));
-			System.out.println("sucessor: " + t.successor(19));
-			System.out.println("sucessor: " + t.successor(20));
-			System.out.println("sucessor: " + t.successor(21));//NAO TEM
+			System.out.println("sucessor: " +t.successor(0).getChave());
+			System.out.println("sucessor: " +t.successor(1).getChave());
+			System.out.println("sucessor: " +t.successor(2).getChave());
+			System.out.println("sucessor: " +t.successor(3).getChave());
+			System.out.println("sucessor: " +t.successor(4).getChave());
+			System.out.println("sucessor: " +t.successor(5).getChave());
+			System.out.println("sucessor: " +t.successor(6).getChave());
+			System.out.println("sucessor: " +t.successor(7).getChave());
+			System.out.println("sucessor: " +t.successor(8).getChave());
+			System.out.println("sucessor: " +t.successor(9).getChave());
+			System.out.println("sucessor: " +t.successor(10).getChave());
+			System.out.println("sucessor: " +t.successor(11).getChave());
+			System.out.println("sucessor: " +t.successor(12).getChave());
+			System.out.println("sucessor: " +t.successor(13).getChave());
+			System.out.println("sucessor: " +t.successor(14).getChave());
+			System.out.println("sucessor: " +t.successor(15).getChave());
+			System.out.println("sucessor: " + t.successor(16).getChave());
+			System.out.println("sucessor: " + t.successor(17).getChave());
+			System.out.println("sucessor: " + t.successor(18).getChave());
+			System.out.println("sucessor: " + t.successor(19).getChave());
+			System.out.println("sucessor: " + t.successor(20).getChave());
+			//System.out.println("sucessor: " + t.successor(21));//NAO TEM
 			
 		//}
 		
