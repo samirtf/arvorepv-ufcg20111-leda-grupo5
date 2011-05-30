@@ -23,8 +23,7 @@ import util.ADTUnderflowException;
 public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 		implements RBTree<K, V> {
 
-	private RBNode<K, V> raiz = new RBNode<K, V>();
-	private RBNode<K, V> axiVazio = new RBNode<K,V>();
+	private RBNode<K, V> root = new RBNode<K, V>();
 
 	// verify all properties
 	protected boolean checkProperties() {
@@ -35,50 +34,64 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	// all nodes (different of NIL) are black or red.
 	private boolean checkProperty1() {
+		return property1(root);
+	}
+
+	private boolean property1(RBNode<K, V> no) {
 		boolean resp = true;
-		if (!isEmpty()) {
-			resp = (this.getCor().equals(PVCores.PRETO) || this.getCor()
-					.equals(PVCores.VERMELHO))
-					&& this.getFilhoEsquerdo().checkProperty1()
-					&& this.getFilhoDireito().checkProperty1();
+		if (!no.isEmpty()) {
+			resp = (no.getCor() || !no.getCor())
+					&& property1(no.getFilhoEsquerda())
+					&& property1(no.getFilhoDireita());
 		}
 		return resp;
 	}
 
 	// all leaves NIL are black
 	private boolean checkProperty2() {
+		return property2(root);
+	}
+
+	private boolean property2(RBNode<K, V> no) {
 		boolean resp = true;
-		if (isEmpty()) {
-			resp = this.getCor().equals(PVCores.PRETO);
+		if (no.isEmpty()) {
+			resp = no.getCor() == true;
 		} else {
-			resp = this.getFilhoEsquerdo().checkProperty2()
-					&& this.getFilhoDireito().checkProperty2();
+			resp = property2(no.getFilhoEsquerda())
+					&& property2(no.getFilhoDireita());
 		}
 		return resp;
 	}
 
 	// the root is black
 	private boolean checkProperty3() {
+		return property3(root);
+	}
+
+	private boolean property3(RBNode<K, V> no) {
 		boolean resp = true;
-		if (!isEmpty()) {
-			resp = this.getPai() == null && this.getCor().equals(PVCores.PRETO);
+		if (!no.isEmpty()) {
+			resp = no.getPai() == null && no.getCor() == true;
 		}
 		return resp;
 	}
 
 	// all red node has black children
 	private boolean checkProperty4() {
+		return property4(root);
+	}
+
+	private boolean property4(RBNode<K, V> no) {
 		boolean resp = true;
-		if (!isEmpty()) {
-			if (this.getCor().equals(PVCores.VERMELHO)) {
-				resp = this.getFilhoEsquerdo().getCor().equals(PVCores.PRETO)
-						&& this.getFilhoDireito().getCor()
-								.equals(PVCores.PRETO)
-						&& this.getFilhoEsquerdo().checkProperty4()
-						&& this.getFilhoDireito().checkProperty4();
+		if (!no.isEmpty()) {
+			if (!no.getCor()) {
+				resp = no.getFilhoEsquerda().getCor() == true
+						&& no.getFilhoDireita().getCor() == true
+						&& property4(no.getFilhoEsquerda())
+						&& property4(no.getFilhoDireita());
 			} else {
-				resp = this.getFilhoEsquerdo().checkProperty4()
-						&& this.getFilhoDireito().checkProperty4();
+				resp = property4(no.getFilhoEsquerda())
+						&& property4(no.getFilhoDireita());
 			}
 		}
 		return resp;
@@ -86,177 +99,189 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	// same black-height for all paths of a node to a leaf
 	private boolean checkProperty5() {
+		return property5(root);
+	}
+
+	private boolean property5(RBNode<K, V> no) {
 		boolean resp = true;
-		if (!isEmpty()) {
-			resp = this.getFilhoEsquerdo().blackHeight() == this
-					.getFilhoDireito().blackHeight();
+		if (!no.isEmpty()) {
+			resp = blackHeight(no.getFilhoEsquerda()) == blackHeight(no
+					.getFilhoDireita());
 		}
 		return resp;
 	}
 
 	protected void fixUp() {
-		if (this.getCor().equals(PVCores.VERMELHO)
-				&& this.getPai().getCor().equals(PVCores.VERMELHO)) {/*
-																	 * SE EU E
-																	 * MEU SOMOS
-																	 * VERMELHOS
-																	 * -
-																	 * "PERNA ESTICADA"
-																	 */
-			if (this.getPai() == this.getPai().getPai().getFilhoEsquerdo()) { /*
-																			 * SE
-																			 * MEU
-																			 * PAI
-																			 * FOR
-																			 * FILHO
-																			 * ESQUERDO
-																			 * DO
-																			 * MEU
-																			 * AVO
-																			 */
-				if (this.getPai().getPai().getFilhoDireito().getCor()
-						.equals(PVCores.VERMELHO)) { // E MEU TIO FOR FOR
-														// VERMELHO
-					this.getPai().mudaDeCor();
-					this.getPai().getPai().mudaDeCor();
-					this.getPai().getPai().getFilhoDireito().mudaDeCor();
+		fixUp(root);
+	}
+
+	protected void fixUp(RBNode<K, V> no) {
+		if (!no.getCor() && !no.getPai().getCor()) {// SE EU E MEU PAI SOMOS
+			// VERMELHOS -
+			// "PERNA ESTICADA"
+			if (no.getPai() == no.getPai().getPai().getFilhoEsquerda()) { // SE
+				// MEU
+				// PAI
+				// FOR
+				// FILHO
+				// ESQUERDO
+				// DO
+				// MEU
+				// AVO
+				if (!no.getPai().getPai().getFilhoDireita().getCor()) { // E
+					// MEU
+					// TIO
+					// FOR
+					// FOR
+					// VERMELHO
+					no.getPai().setCor();
+					no.getPai().getPai().setCor();
+					no.getPai().getPai().getFilhoDireita().setCor();
 					// SE O AVO FOR RAIZ DEVE SER PRETO
-					if (this.getPai().getPai().getPai() == null) {// PAI DO AVO
-						// NULL -
+					if (no.getPai().getPai().getPai() == null) {// PAI DO AVO
+						// FOR NULL
+						// ELE E
 						// RAIZ
-						this.getPai().getPai().setCor(PVCores.PRETO);// ATUALIZA
-						// PARA
-						// PRETO
+						setCorBlack(no.getPai().getPai());// ATUALIZA PARA PRETO
+						// // >>>TESTAR SE DESSA
+						// FORMA O NO E
+						// REALMENTE PRETO<<<<
 					}
 
-				} else if (((this == this.getPai().getFilhoDireito()) && (this
-						.getPai() == this.getPai().getPai().getFilhoEsquerdo()))// SE
+				} else if (((no == no.getPai().getFilhoDireita()) && (no
+						.getPai() == no.getPai().getPai().getFilhoEsquerda()))// SE
 						// EU
 						// SOU
 						// FILHO
 						// DIREITO
 						// DO
-						// MEU PAI E MEU PAI FOR
-						// FILHO ESQUERDO DO MEU AVO
-						// OU
-						|| ((this == this.getPai().getFilhoEsquerdo()) && (this
-								.getPai() == this.getPai().getPai()
-								.getFilhoDireito()))) {// EU SOU FILHO
-					// ESQUERDO DO MEU
-					// PAI E MEU PAI EH
-					// FILHO DIREITO DO
-					// MEU AVO - JOELHO
-					if ((this == this.getPai().getFilhoDireito())
-							&& (this.getPai() == this.getPai().getPai()
-									.getFilhoEsquerdo())) {// SE EU SOU
-						// FILHO DIREITO
-						// DO MEU PAI E
-						// MEU PAI EH
-						// FILHO
-						// ESQUERDO DO
+						// MEU
+						// PAI
+						// E
+						// MEU
+						// PAI
+						// FOR
+						// FILHO ESQUERDO DO MEU AVO OU
+						|| ((no == no.getPai().getFilhoEsquerda()) && (no
+								.getPai() == no.getPai().getPai()
+								.getFilhoDireita()))) {// EU SOU FILHO ESQUERDO
+					// DO MEU PAI E MEU PAI
+					// EH
+					// FILHO DIREITO DO MEU AVO - JOELHO
+					if ((no == no.getPai().getFilhoDireita())
+							&& (no.getPai() == no.getPai().getPai()
+									.getFilhoEsquerda())) {// SE EU SOU FILHO
+						// DIREITO DO MEU
+						// PAI E MEU PAI EH
+						// FILHO ESQUERDO DO
 						// MEU AVO
-						this.getPai().leftRotation();// ROTACIONA MEU PAI A
-						// ESQUERDA
-						// EU ERA O PIVO QUE TEVE O FILHO MODIFICADO PARA O
-						// AVO NA ROTACAO
-						this.getPai().getFilhoEsquerdo().getFilhoEsquerdo()
-								.fixUp();
+						leftRotation(no.getPai());// ROTACIONA MEU PAI A
+						// ESQUERDA EU ERA O PIVO
+						// QUE TEVE O FILHO
+						// MODIFICADO PARA O AVO NA
+						// ROTACAO
+						fixUp(no.getPai().getFilhoEsquerda().getFilhoEsquerda());
 					}
-					if ((this == this.getPai().getFilhoEsquerdo())
-							&& (this.getPai() == this.getPai().getPai()
-									.getFilhoDireito())) {// SE EU SOU FILHO
-						// A ESQUERDA DO
-						// MEU PAI E MEU
-						// PAI EH FILHO
-						// A DIREITA DO
-						// MEU AVO
-						this.getPai().rightRotation();// ROTACIONA MEU PAI A
-						// DIREITA
-						// EU ERA O PIVO QUE TEVE O FILHO MODIFICADO PARA O
-						// AVO NA ROTACAO
-						this.getPai().getPai().getFilhoDireito().fixUp();
+					if ((no == no.getPai().getFilhoEsquerda())
+							&& (no.getPai() == no.getPai().getPai()
+									.getFilhoDireita())) {// SE EU SOU FILHO A
+						// ESQUERDA DO MEU
+						// PAI E MEU PAI EH
+						// FILHO A DIREITA
+						// DO MEU AVO
+						rightRotation(no.getPai());// ROTACIONA MEU PAI A
+						// DIREITA EU ERA O PIVO
+						// QUE TEVE O FILHO
+						// MODIFICADO PARA O AVO
+						// NA ROTACAO
+						fixUp(no.getPai().getPai().getFilhoDireita());
 					}
 
-				} else if (((this == this.getPai().getFilhoEsquerdo()) && (this
-						.getPai() == this.getPai().getPai().getFilhoEsquerdo()))
-						|| ((this == this.getPai().getFilhoDireito()) && (this
-								.getPai() == this.getPai().getPai()
-								.getFilhoDireito()))) {// CASO 3 TIO PRETO E
+				} else if (((no == no.getPai().getFilhoEsquerda()) && (no
+						.getPai() == no.getPai().getPai().getFilhoEsquerda()))
+						|| ((no == no.getPai().getFilhoDireita()) && (no
+								.getPai() == no.getPai().getPai()
+								.getFilhoDireita()))) {// CASO 3 TIO PRETO E
 					// FILHO, PAI E AVO
 					// FORMAM LINHA RETA
-					if (((this == this.getPai().getFilhoEsquerdo()) && (this
-							.getPai() == this.getPai().getPai()
-							.getFilhoEsquerdo()))) {
-						this.getPai().getPai().mudaDeCor();
-						this.getPai().mudaDeCor();
-						this.getPai().getPai().rightRotation();
+					if (((no == no.getPai().getFilhoEsquerda()) && (no.getPai() == no
+							.getPai().getPai().getFilhoEsquerda()))) {
+						no.getPai().getPai().setCor();// Verificar a cor
+						no.getPai().setCor(); // Verificar a cor
+						rightRotation(no.getPai().getPai());
 
 					}
-					if (((this == this.getPai().getFilhoDireito()) && (this
-							.getPai() == this.getPai().getPai()
-							.getFilhoDireito()))) {
-						this.getPai().getPai().mudaDeCor();
-						this.getPai().mudaDeCor();
-						this.getPai().getPai().leftRotation();
+					if (((no == no.getPai().getFilhoDireita()) && (no.getPai() == no
+							.getPai().getPai().getFilhoDireita()))) {
+						no.getPai().getPai().setCor();// Verificar a cor
+						no.getPai().setCor();// Verificar a cor
+						leftRotation(no.getPai().getPai());
 					}
 				}
 			} else {
-				if (this.getPai().getPai().getFilhoEsquerdo().getCor()
-						.equals(PVCores.VERMELHO)) { // ESPELHO DO CASO 1 - TIO
-					// VERMELHO SENDO FILHO
-					// A ESQUERDA DO AVO
-					this.getPai().mudaDeCor();
-					this.getPai().getPai().mudaDeCor();
+				if (!no.getPai().getPai().getFilhoEsquerda().getCor()) { // ESPELHO
+					// DO
+					// CASO
+					// 1
+					// -
+					// TIO
+					// VERMELHO
+					// SENDO
+					// FILHO
+					// A
+					// ESQUERDA
+					// DO
+					// AVO
+					no.getPai().setCor();// Verificar a cor
+					no.getPai().getPai().setCor();// Verificar a cor
 					// se o avor for raiz deve deixar a cor preta
-					if (this.getPai().getPai().getPai() == null) {
-						this.getPai().getPai().setCor(PVCores.PRETO);
+					if (no.getPai().getPai().getPai() == null) {
+						setCorBlack(no.getPai().getPai());// Verificar a cor
 					}
-					this.getPai().getPai().getFilhoEsquerdo().mudaDeCor();
-				} else if (((this == this.getPai().getFilhoDireito()) && (this
-						.getPai() == this.getPai().getPai().getFilhoEsquerdo()))
-						|| ((this == this.getPai().getFilhoEsquerdo()) && (this
-								.getPai() == this.getPai().getPai()
-								.getFilhoDireito()))) {// CASO 2 TIO PRETO E
+					no.getPai().getPai().getFilhoEsquerda().setCor();// Verificar
+					// a cor
+				} else if (((no == no.getPai().getFilhoDireita()) && (no
+						.getPai() == no.getPai().getPai().getFilhoEsquerda()))
+						|| ((no == no.getPai().getFilhoEsquerda()) && (no
+								.getPai() == no.getPai().getPai()
+								.getFilhoDireita()))) {// CASO 2 TIO PRETO E
 					// FILHO PAI E AVO
 					// FORMAM JOELHO
-					if ((this == this.getPai().getFilhoDireito())
-							&& (this.getPai() == this.getPai().getPai()
-									.getFilhoEsquerdo())) {
-						this.getPai().leftRotation();
-						this.getPai().getFilhoEsquerdo().fixUp();
+					if ((no == no.getPai().getFilhoDireita())
+							&& (no.getPai() == no.getPai().getPai()
+									.getFilhoEsquerda())) {
+						leftRotation(no.getPai());
+						fixUp(no.getPai().getFilhoEsquerda());
 					}
-					if ((this == this.getPai().getFilhoEsquerdo())
-							&& (this.getPai() == this.getPai().getPai()
-									.getFilhoDireito())) {
-						this.getPai().rightRotation();
-						this.getPai().getFilhoDireito().fixUp();
+					if ((no == no.getPai().getFilhoEsquerda())
+							&& (no.getPai() == no.getPai().getPai()
+									.getFilhoDireita())) {
+						rightRotation(no.getPai());
+						fixUp(no.getPai().getFilhoDireita());
 					}
-					// como recai sempre no caso 3 chama recursivamente o
-					// metodo
+					// como recai sempre no caso 3 chama recursivamente o metodo
 					// fixUp();
-				} else if (((this == this.getPai().getFilhoEsquerdo()) && (this
-						.getPai() == this.getPai().getPai().getFilhoEsquerdo()))
-						|| ((this == this.getPai().getFilhoDireito()) && (this
-								.getPai() == this.getPai().getPai()
-								.getFilhoDireito()))) {// CASO 3 TIO PRETO E
+				} else if (((no == no.getPai().getFilhoEsquerda()) && (no
+						.getPai() == no.getPai().getPai().getFilhoEsquerda()))
+						|| ((no == no.getPai().getFilhoDireita()) && (no
+								.getPai() == no.getPai().getPai()
+								.getFilhoDireita()))) {// CASO 3 TIO PRETO E
 					// FILHO, PAI E AVO
 					// FORMAM LINHA RETA
-					if (((this == this.getPai().getFilhoEsquerdo()) && (this
-							.getPai() == this.getPai().getPai()
-							.getFilhoEsquerdo()))) {
-						this.getPai().getPai().mudaDeCor();
-						this.getPai().mudaDeCor();
-						this.getPai().getPai().mudaDeCor();
+					if (((no == no.getPai().getFilhoEsquerda()) && (no.getPai() == no
+							.getPai().getPai().getFilhoEsquerda()))) {
+						no.getPai().getPai().setCor();// Verificar a cor
+						no.getPai().setCor();// Verificar a cor
+						rightRotation(no.getPai().getPai());// Verificar a cor
 
 					}
-					if (((this == this.getPai().getFilhoDireito()) && (this
-							.getPai() == this.getPai().getPai()
-							.getFilhoDireito()))) {
+					if (((no == no.getPai().getFilhoDireita()) && (no.getPai() == no
+							.getPai().getPai().getFilhoDireita()))) {
 						// as cores sao modificadas antes porque o avo eh
 						// rotacionado
-						this.getPai().getPai().mudaDeCor();
-						this.getPai().mudaDeCor();
-						this.getPai().getPai().leftRotation();
+						no.getPai().getPai().setCor();// Verificar a cor
+						no.getPai().setCor();// Verificar a cor
+						leftRotation(no.getPai().getPai());
 
 					}
 				}
@@ -267,91 +292,100 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 		// problemas que eventualmente surjam por causa da recursao. E o
 		// fixUp deve ser aplicado
 		// ao avo se ele nao for o root da arvore.
-		if (this.getPai() != null) {
-			if (this.getPai().getPai() != null) {
-				if (this.getPai().getPai().getPai() != null) {
-					this.getPai().getPai().fixUp();
+		if (no.getPai() != null) {
+			if (no.getPai().getPai() != null) {
+				if (no.getPai().getPai().getPai() != null) {
+					fixUp(no.getPai().getPai());
 				}
 			}
 		}
 	}
 
-	private void mudaDeCor() {
-		if (this.getCor().equals(PVCores.PRETO)) {
-			this.setCor(PVCores.VERMELHO);
-		} else {
-			this.setCor(PVCores.PRETO);
-		}
+	protected RBNode<K, V> leftRotation() {
+		return leftRotation(root);
 	}
 
-	protected RBNode<K, V> leftRotation() {
-		RBTreeImpl<K, V> root = this;
-		RBTreeImpl<K, V> pivot = this.getFilhoDireito();
-		RBTreeImpl<K, V> paiRoot = root.getPai();
+	private RBNode<K, V> leftRotation(RBNode<K, V> no) {
+		RBNode<K, V> tmp = no.getFilhoDireita();
+		substituirNo(no, tmp);
+		setRightNode(no, tmp.getFilhoEsquerda());
+		setLeftNode(tmp, no);
+		return root;
+	}
 
-		RBTreeImpl<K, V> novoFilhoEsquerdaRoot = new RBTreeImpl<K, V>();
-		novoFilhoEsquerdaRoot.setDadoSatelite(root.getDadoSatelite());
-		novoFilhoEsquerdaRoot.setChave(root.getChave());
-		novoFilhoEsquerdaRoot.setCor(root.getCor());
-		novoFilhoEsquerdaRoot.setFilhoEsquerdo(root.getFilhoEsquerdo());
-		novoFilhoEsquerdaRoot.getFilhoEsquerdo().setPai(novoFilhoEsquerdaRoot);
-		novoFilhoEsquerdaRoot.setFilhoDireito(pivot.getFilhoEsquerdo());
-		novoFilhoEsquerdaRoot.getFilhoDireito().setPai(novoFilhoEsquerdaRoot);
-		novoFilhoEsquerdaRoot.setPai(root);
-		root.setFilhoDireito(novoFilhoEsquerdaRoot);
-		root.setDadoSatelite(pivot.getDadoSatelite());
-		root.setChave(pivot.getChave());
-		root.setCor(pivot.getCor());
-		// se for o root da arvore entao no pode ser vermelho
-		if (root.getPai() == null && root.getCor().equals(PVCores.VERMELHO)) {
-			root.setCor(PVCores.PRETO);
+	/**
+	 * O metodo de substituir no atual pelo novo no
+	 * 
+	 * @param atual
+	 *            - no para ser trocado.
+	 * @param novoNo
+	 *            - novo no para troca.
+	 */
+	private void substituirNo(RBNode<K, V> atual, RBNode<K, V> novoNo) {
+		if (atual.getPai() != null) {
+			if (atual.equals(atual.getPai().getFilhoEsquerda())) {
+				setLeftNode(atual.getPai(), novoNo);
+			} else {
+				setRightNode(atual.getPai(), novoNo);
+			}
+		} else {
+			root = novoNo;
+			root.setPai(null);
 		}
-		root.setFilhoDireito(pivot.getFilhoDireito());
-		root.getFilhoDireito().setPai(root);
-		root.setPai(paiRoot);
-		pivot.setPai(root.getPai());
-		return raiz;
+
+	}
+
+	/**
+	 * O metodo faz com que novo filho a esquerda deixe de ser a filho do atual
+	 * 
+	 * @param atual
+	 *            - para definir o no filho a esquerda
+	 * @param novoFilhoAEsquerda
+	 *            - um novo no deixou de ser filho esquerdo do atual
+	 */
+	private void setLeftNode(RBNode<K, V> atual, RBNode<K, V> novoFilhoAEsquerda) {
+		atual.setFilhoEsquerda(novoFilhoAEsquerda);
+		novoFilhoAEsquerda.setPai(atual);
+	}
+
+	/**
+	 * O metodo faz com que novo filho a direito deixe de ser a filho do atual
+	 * 
+	 * @param atual
+	 *            - para definir o no filho a direita
+	 * @param novoFilhoADireita
+	 *            - um novo no deixou de ser filho direito do atual
+	 */
+	private void setRightNode(RBNode<K, V> atual, RBNode<K, V> novoFilhoADireita) {
+		atual.setFilhoDireita(novoFilhoADireita);
+		novoFilhoADireita.setPai(atual);
 	}
 
 	protected RBNode<K, V> rightRotation() {
-		RBTreeImpl<K, V> root = this;
-		RBTreeImpl<K, V> pivot = this.getFilhoEsquerdo();
-		RBTreeImpl<K, V> paiRoot = root.getPai();
+		return rightRotation(root);
+	}
 
-		RBTreeImpl<K, V> novoFilhoDireitaRoot = new RBTreeImpl<K, V>();
-		novoFilhoDireitaRoot.setDadoSatelite(root.getDadoSatelite());
-		novoFilhoDireitaRoot.setChave(root.getChave());
-		novoFilhoDireitaRoot.setCor(root.getCor());
-		novoFilhoDireitaRoot.setFilhoDireito(root.getFilhoDireito());
-		novoFilhoDireitaRoot.getFilhoDireito().setPai(novoFilhoDireitaRoot);
-		novoFilhoDireitaRoot.setFilhoEsquerdo(pivot.getFilhoDireito());
-		novoFilhoDireitaRoot.getFilhoEsquerdo().setPai(novoFilhoDireitaRoot);
-		novoFilhoDireitaRoot.setPai(root);
-		root.setFilhoDireito(novoFilhoDireitaRoot);
-		root.setDadoSatelite(pivot.getDadoSatelite());
-		root.setChave(pivot.getChave());
-		root.setCor(pivot.getCor());
-		// se for o root da arvore entao no pode ser vermelho
-		if (root.getPai() == null && root.getCor().equals(PVCores.VERMELHO)) {
-			root.setCor(PVCores.PRETO);
-		}
-		root.setFilhoEsquerdo(pivot.getFilhoEsquerdo());
-		root.getFilhoEsquerdo().setPai(root);
-		root.setPai(paiRoot);
-		pivot.setPai(root.getPai());
-
-		return raiz;
+	private RBNode<K, V> rightRotation(RBNode<K, V> no) {
+		RBNode<K, V> tmp = no.getFilhoEsquerda();
+		substituirNo(no, tmp);
+		setLeftNode(no, tmp.getFilhoDireita());
+		setRightNode(tmp, no);
+		return root;
 	}
 
 	@Override
 	public int height() {
+		return height(root);
+	}
+
+	private int height(RBNode<K, V> no) {
 		int result = -1;
-		if (!isEmpty()) {
-			if (isLeaf()) {
+		if (!no.isEmpty()) {
+			if (no.isLeaf()) {
 				result = 0;
 			} else {
-				result = 1 + Math.max(getFilhoEsquerdo().height(),
-						getFilhoDireito().height());
+				result = 1 + Math.max(height(no.getFilhoEsquerda()),
+						height(no.getFilhoDireita()));
 			}
 		}
 		return result;
@@ -359,17 +393,21 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public int blackHeight() {
+		return blackHeight(root);
+	}
+
+	private int blackHeight(RBNode<K, V> no) {
 		int result = 0;
-		if (!isEmpty()) {
-			if (this.getCor().equals(PVCores.PRETO)) {
-				result = 1 + this.getFilhoEsquerdo().blackHeight();
+		if (!no.isEmpty()) {
+			if (no.getCor()) {
+				result = 1 + blackHeight(no.getFilhoEsquerda());
 			} else {
-				int rightBlackHeight = this.getFilhoDireito().blackHeight();
-				int leftBlackHeight = this.getFilhoEsquerdo().blackHeight();
+				int rightBlackHeight = blackHeight(no.getFilhoDireita());
+				int leftBlackHeight = blackHeight(no.getFilhoEsquerda());
 				if (rightBlackHeight != leftBlackHeight) {
 					result = -1;
 				} else {
-					result = this.getFilhoEsquerdo().blackHeight();
+					result = blackHeight(no.getFilhoEsquerda());
 				}
 			}
 		}
@@ -378,34 +416,50 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public V search(K key) {
+		return search(key, root);
+	}
+
+	private V search(K key, RBNode<K, V> no) {
 		V resp = null;
-		if (!isEmpty()) {
+		if (!no.isEmpty()) {
 			if (key != null) {
-				if (key.equals(this.getChave())) {
-					resp = this.getDadoSatelite();
+				if (key.equals(no.getChave())) {
+					resp = no.getValor();
 				} else {
-					if (key.compareTo(this.getChave()) < 0) {
-						resp = this.getFilhoEsquerdo().search(key);
+					if (key.compareTo(no.getChave()) < 0) {
+						resp = search(key, no.getFilhoEsquerda());
 					} else {
-						resp = this.getFilhoDireito().search(key);
+						resp = search(key, no.getFilhoDireita());
 					}
 				}
 			}
 		}
 		return resp;
 	}
-	
-	public RBTreeImpl<K, V> busca(K key) {
-		RBTreeImpl<K, V> resp = null;
-		if (!isEmpty()) {
+
+	/**
+	 * Metodo que busca valor associado a uma determinada chave. Retorna nulo se
+	 * a chave eh nao na arvore.
+	 * 
+	 * @param key
+	 *            - chave a procurar na arvore
+	 * @return a arvore da chave associada
+	 */
+	public RBNode<K, V> busca(K key) {
+		return busca(key, root);
+	}
+
+	private RBNode<K, V> busca(K key, RBNode<K, V> no) {
+		RBNode<K, V> resp = null;
+		if (!no.isEmpty()) {
 			if (key != null) {
-				if (key.equals(this.getChave())) {
-					resp = this;
+				if (key.equals(no.getChave())) {
+					resp = no;
 				} else {
-					if (key.compareTo(this.getChave()) < 0) {
-						resp = this.getFilhoEsquerdo().busca(key);
+					if (key.compareTo(no.getChave()) < 0) {
+						resp = busca(key, no.getFilhoEsquerda());
 					} else {
-						resp = this.getFilhoDireito().busca(key);
+						resp = busca(key, no.getFilhoDireita());
 					}
 				}
 			}
@@ -415,44 +469,60 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public void insert(K key, V value) throws ADTOverflowException {
-		if (isEmpty()) {
-			this.setChave(key);
-			this.setDadoSatelite(value);
-			if (this.getPai() != null) {
-				this.setCor(PVCores.VERMELHO);
+		insert(key, value, root);
+	}
+
+	private void insert(K key, V value, RBNode<K, V> no)
+			throws ADTOverflowException {
+		if (no.isEmpty()) {
+			no.setChave(key);
+			no.setValor(value);
+			if (no.getPai() != null) {
+				setCorRed(no); // Verificar cor
 			}
-			this.setFilhoEsquerdo(new RBTreeImpl<K, V>());
-			this.getFilhoEsquerdo().setPai(this);
-			this.setFilhoDireito(new RBTreeImpl<K, V>());
-			this.getFilhoDireito().setPai(this);
-			fixUp();
+			no.setFilhoEsquerda(new RBNode<K, V>());
+			no.getFilhoEsquerda().setPai(no);
+			no.setFilhoDireita(new RBNode<K, V>());
+			no.getFilhoDireita().setPai(no);
+			fixUp(no);// ATENCAO ERRO AQUI ENTENDER
 		} else {
-			if (!this.getChave().equals(key)) {
-				if (key.compareTo(this.getChave()) < 0) {
-					this.getFilhoEsquerdo().insert(key, value);
+			if (!no.getChave().equals(key)) {
+				if (key.compareTo(no.getChave()) < 0) {
+					insert(key, value, no.getFilhoEsquerda());
 				} else {
-					this.getFilhoDireito().insert(key, value);
+					insert(key, value, no.getFilhoDireita());
 				}
 			}
 		}
-
 	}
 
 	@Override
 	public V maximum() {
-		return this.search(this.maximumKey());
+		return maximum(root);
+	}
+
+	private V maximum(RBNode<K, V> no) {
+		return search(maximumKey(no));
 	}
 
 	@Override
 	public V minimum() {
-		return this.search(this.minimumKey());
+		return minimum(root);
+	}
+
+	private V minimum(RBNode<K, V> no) {
+		return search(minimumKey(no));
 	}
 
 	@Override
 	public K maximumKey() {
-		K maxChave = this.getChave();
-		if (!isEmpty()) {
-			K maxChaveFilhoDireita = this.getFilhoDireito().maximumKey();
+		return maximumKey(root);
+	}
+
+	private K maximumKey(RBNode<K, V> no) {
+		K maxChave = no.getChave();
+		if (!no.isEmpty()) {
+			K maxChaveFilhoDireita = maximumKey(no.getFilhoDireita());
 			if (maxChaveFilhoDireita != null
 					&& maxChaveFilhoDireita.compareTo(maxChave) > 0) {
 				maxChave = maxChaveFilhoDireita;
@@ -463,118 +533,266 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 
 	@Override
 	public K minimumKey() {
-		K minChave = this.getChave();
-		if (!isEmpty()) {
-			K minKeyFilhoEsquerda = this.getFilhoEsquerdo().minimumKey();
+		return minimumKey(root);
+	}
+
+	private K minimumKey(RBNode<K, V> no) {
+		K minChave = no.getChave();
+		if (!no.isEmpty()) {
+			K minKeyFilhoEsquerda = minimumKey(no.getFilhoEsquerda());
 			if (minKeyFilhoEsquerda != null
 					&& minKeyFilhoEsquerda.compareTo(minChave) < 0) {
 				minChave = minKeyFilhoEsquerda;
 			}
 		}
 		return minChave;
+
 	}
 
 	@Override
 	public RBNode<K, V> successor(K key) {
-		RBTreeImpl<K, V> baseNode = busca(key);
-		if (baseNode.isEmpty()) {
-			return null;
+		RBNode<K, V> baseNode = busca(key);
+		RBNode<K, V> resp = null;
+		if (!baseNode.isEmpty()) {
+			if (!baseNode.getFilhoDireita().isEmpty()) {
+				// o minimo filho direito
+				resp = maisAEsquerda(baseNode.getFilhoDireita());
+			} else {
+				RBNode<K, V> baseParentNode = baseNode.getPai();
+				while (!baseParentNode.isEmpty()
+						&& baseNode.equals(baseParentNode.getFilhoDireita())) {
+					if (!baseParentNode.equals(new RBNode<K, V>())) {
+						baseNode = baseParentNode;
+						baseParentNode = baseNode.getPai();
+					} else {
+						resp = null;
+					}
+
+				}
+				resp = baseParentNode;
+			}
+		} else {
+			resp = null;
 		}
-		RBTreeImpl<K, V> resp = null;
-        if (!baseNode.isEmpty()) {
-            if (!baseNode.getFilhoDireito().isEmpty()) {
-                //o minimo filho direito
-                resp = maisAEsquerda(baseNode.getFilhoDireito());
-            } else {
-                RBTreeImpl<K, V> baseParentNode = baseNode.getPai();
-                while (!baseParentNode.equals(null) && baseNode.equals(baseParentNode.getFilhoDireito())) {
-                    if (!baseParentNode.equals(axiVazio)) {
-                        baseNode = baseParentNode;
-                        baseParentNode = baseNode.getPai();
-                    } else {
-                        resp = null;
-                    }
- 
-                }
-                resp = baseParentNode;
-            }
-        } else {
-            resp = null;
-        }
-        return resp.getNo();
+		// ??
+		return resp;
 	}
-	
+
 	/**
-     * O metodo retorna o no mais a esquerda de um dado no.
-     *
-     * @param atual - arvore atual
-     * @return a arvore mais a esquerda
-     */
-    private RBTreeImpl<K, V> maisAEsquerda(RBTreeImpl<K, V> atual) {
-        RBTreeImpl<K, V> iterator = atual;
-        while (!iterator.getFilhoEsquerdo().isEmpty()) {
-            iterator = iterator.getFilhoEsquerdo();
-        }
-        return iterator;
-    }
-    
-    /**
-     * The method returns the most right node of a given node.
-     *
-     * @param current - node to start from
-     * @return Most Right node
-     */
-    private RBTreeImpl<K, V> maisADireita(RBTreeImpl<K, V> atual) {
-        RBTreeImpl<K, V> iterator = atual;
-        while (!iterator.getFilhoDireito().isEmpty()) {
-            iterator = iterator.getFilhoDireito();
-        }
-        return iterator;
-    }
+	 * O metodo retorna o no mais a esquerda de um dado no.
+	 * 
+	 * @param atual
+	 *            - arvore atual
+	 * @return a arvore mais a esquerda
+	 */
+	private RBNode<K, V> maisAEsquerda(RBNode<K, V> atual) {
+		RBNode<K, V> iterator = atual;
+		while (!iterator.getFilhoEsquerda().isEmpty()) {
+			iterator = iterator.getFilhoEsquerda();
+		}
+		return iterator;
+	}
+
+	/**
+	 * O metodo retorna o no mais a direita de um determinado no.
+	 * 
+	 * @param atual
+	 *            - arvore atual
+	 * @return ravore mais a direita
+	 */
+	private RBNode<K, V> maisADireita(RBNode<K, V> atual) {
+		RBNode<K, V> iterator = atual;
+		while (!iterator.getFilhoDireita().isEmpty()) {
+			iterator = iterator.getFilhoDireita();
+		}
+		return iterator;
+	}
 
 	@Override
 	public RBNode<K, V> predecessor(K key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		RBNode<K, V> baseNode = busca(key);// PEGA O ARVORE DO NO
+		RBNode<K, V> resp = null;// AXILIAR
+		if (!baseNode.isEmpty()) {// SE ENCONTROU E POR QUE POSSIVELMENTE TEM
+			// PREDECESSOR
+			if (!baseNode.getFilhoEsquerda().isEmpty()) {// VOU PARA MEU FILHO
+				// ESQUERDO E PEGO O
+				// NO MAIS A DIREITA
+				// o minimo filho esquerdo
+				resp = maisADireita(baseNode.getFilhoEsquerda());// NO
+				// F.ESQUERDO
+				// NA FOLHA
+				// MAIS A
+				// DIREITA
+				// ESTA O
+				// PREDECESSOR
+			} else {
+				RBNode<K, V> baseParentNode = baseNode.getPai();
+				while (!baseParentNode.isEmpty()
+						&& baseNode.equals(baseParentNode.getFilhoEsquerda())) {
+					if (!baseParentNode.equals(new RBNode<K, V>())) {
+						baseNode = baseParentNode;
+						baseParentNode = baseNode.getPai();
+					} else {
+						resp = null;
+					}
 
-	@Override
-	public void delete(K key) throws ADTUnderflowException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public int size() {
-		int resp = 0;
-		if (!isEmpty()) {
-			resp = 1 + this.getFilhoEsquerdo().size()
-					+ this.getFilhoDireito().size();
+				}
+				resp = baseParentNode;
+			}
+		} else {
+			resp = null;
 		}
 		return resp;
 	}
 
 	@Override
-	public V[] preOrder() {
-		// StringBuilder stringPre = new StringBuilder();
-		// if (!isEmpty()) {
-		// if (this.getCor().equals(PVCores.PRETO)) {
-		// stringPre.append("<" + this.getChave() + "> ");
-		// } else {
-		// stringPre.append(this.getChave() + " ");
-		// }
-		// stringPre.append(this.getFilhoEsquerdo().preOrder());
-		// stringPre.append(this.getFilhoDireito().preOrder());
-		// }
-		// return stringPre;
+	public void delete(K key) throws ADTUnderflowException {
+		RBNode<K, V> no = busca(key);
+		if (no != null) {// chave nao foi encontrada... nao faca nada..
+			if (!no.getFilhoEsquerda().isEmpty()
+					&& !no.getFilhoDireita().isEmpty()) {
+				// copie a chave e valor do predecessor e delete ele.
+				RBNode<K, V> predecessor = maximumNode(no.getFilhoEsquerda());
+				no.setChave(predecessor.getChave());
+				no.setValor(predecessor.getValor());
+				no = predecessor;
+			}
 
+			RBNode<K, V> filho = (no.getFilhoDireita() == null) ? no
+					.getFilhoEsquerda() : no.getFilhoDireita();
+			if (no.getCor()) {
+				setCorDoOutro(no, filho);
+				deleteFixUP(no);
+			}
+			trocaNo(no, filho);
+
+			if (!root.getCor()) {
+				setCorBlack(root);
+			}
+
+			checkProperties();
+		}
+
+	}
+
+	private RBNode<K, V> maximumNode(RBNode<K, V> no) {
+		if (no != null) {
+			while (no.getFilhoDireita() != null) {
+				no = no.getFilhoDireita();
+			}
+		}
+		return no;
+	}
+
+	private void trocaNo(RBNode<K, V> antigoNo, RBNode<K, V> novoNo) {
+		if (antigoNo.getPai() == null) {
+			root = novoNo;
+		} else {
+			if (antigoNo == antigoNo.getPai().getFilhoEsquerda())
+				antigoNo.getPai().setFilhoEsquerda(novoNo);
+			else
+				antigoNo.getPai().setFilhoDireita(novoNo);
+		}
+		if (novoNo != null) {
+			novoNo.setPai(antigoNo.getPai());
+		}
+	}
+
+	private void deleteFixUP(RBNode<K, V> atual) {
+		while ((!atual.equals(root)) && atual.getCor()) {
+			if (atual.equals(atual.getPai().getFilhoEsquerda())) {
+				RBNode<K, V> brother = atual.getPai().getFilhoDireita();
+				if (!brother.getCor()) {
+					// caso1 - irmão direito é vermelho
+					setCorBlack(brother);
+
+					setCorRed(atual.getPai());
+
+					leftRotation(atual.getPai());
+					brother = atual.getPai().getFilhoDireita();
+				}
+				if (brother.getFilhoEsquerda().getCor()
+						&& brother.getFilhoDireita().getCor()) {
+					// Caso2 - irmão direita e preto e seus dois filhos
+					// pretos
+
+					setCorRed(brother);
+
+					atual = atual.getPai();
+				} else {
+					// um filho do irmao de direito e vermelho
+					if (brother.getFilhoDireita().getCor()) {
+						// Caso3 - filho da direita irmao direito e preto
+						setCorBlack(brother.getFilhoEsquerda());
+						rightRotation(brother);
+						brother = atual.getPai().getFilhoDireita();
+					}
+					// caso4 - o filho deixou o irmão certo é preto
+					setCorDoOutro(brother, atual.getPai());
+					setCorBlack(atual.getPai());
+					setCorBlack(brother.getFilhoDireita());
+					leftRotation(atual.getPai());
+					atual = root;
+				}
+			} else {
+				// casos simetricos como acima
+				RBNode<K, V> brother = atual.getPai().getFilhoEsquerda();
+				if (!brother.getCor()) {
+					// caso1 - irmão esquerda e vermelho
+					setCorBlack(brother);
+					setCorRed(atual.getPai());
+					rightRotation(atual.getPai());
+					brother = atual.getPai().getFilhoEsquerda();
+				}
+				if (brother.getFilhoEsquerda().getCor()
+						&& brother.getFilhoDireita().getCor()) {
+					// Caso 2 - irmão esquerdo e preto e os seus dois filhos
+					// preto
+					setCorRed(brother);
+					atual = atual.getPai();
+				} else {
+					// um filho do irmao de esquerda e vermelho
+					if (brother.getFilhoEsquerda().getCor()) {
+						// Caso3
+						setCorBlack(brother.getFilhoDireita());
+						leftRotation(brother);
+						brother = atual.getPai().getFilhoEsquerda();
+					}
+					// caso4
+					setCorDoOutro(brother, atual.getPai());
+					setCorBlack(atual.getPai());
+					setCorBlack(brother.getFilhoEsquerda());
+					rightRotation(atual.getPai());
+					atual = root;
+				}
+			}
+		}
+		setCorBlack(atual);
+	}
+
+	@Override
+	public int size() {
+		return size(root);
+	}
+
+	private int size(RBNode<K, V> no) {
+		int resp = 0;
+		if (!no.isEmpty()) {
+			resp = 1 + size(no.getFilhoEsquerda()) + size(no.getFilhoDireita());
+		}
+		return resp;
+
+	}
+
+	@Override
+	public V[] preOrder() {
 		return null;
 	}
 
 	@Override
 	public V[] order() {
-		// TODO Auto-generated method stub
 		return null;
+
 	}
 
 	@Override
@@ -583,150 +801,75 @@ public class RBTreeImpl<K extends Comparable<K>, V extends Comparable<V>>
 		return null;
 	}
 
-	public boolean isEmpty() {
-		return raiz.isEmpty();
-	}
-
-	private boolean isLeaf() {
-		return raiz.isLeaf();
-
-	}
-
 	public String toString() {
-		return raiz.toString();
+		return root.toString();
 	}
 
-	private RBTreeImpl<K, V> getFilhoDireito() {
-		return raiz.getFilhoDireito();
-
+	public void setCorBlack(RBNode<K, V> no) {
+		if (!no.getCor()) {
+			no.setCor();
+		}
 	}
 
-	private RBTreeImpl<K, V> getFilhoEsquerdo() {
-		return raiz.getFilhoEsquerdo();
+	public void setCorRed(RBNode<K, V> no) {
+		if (no.getCor()) {
+			no.setCor();
+		}
 	}
 
-	private K getChave() {
-		return raiz.getChave();
+	public void setCorDoOutro(RBNode<K, V> noAtual, RBNode<K, V> noComparacao) {
+		if (noAtual.getCor() != noComparacao.getCor()) {
+			setCor(noAtual, noComparacao.getCor());
+		}
 	}
 
-	private V getDadoSatelite() {
-		return raiz.getDadoSatelite();
+	private void setCor(RBNode<K, V> no, boolean isBlack) {
+		if (isBlack) {
+			setCorBlack(no);
+		} else {
+			setCorRed(no);
+		}
 	}
 
-	private RBTreeImpl<K, V> getPai() {
-		return raiz.getPai();
-	}
-
-	public RBNode<K, V> getNo() {
-		return raiz;
-	}
-
-	private PVCores getCor() {
-		return raiz.getCor();
-	}
-
-	public void setRaiz(RBNode<K, V> raiz) {
-		this.raiz = raiz;
-	}
-
-	public void setChave(K novaChave) {
-		raiz.setChave(novaChave);
-	}
-
-	public void setCor(PVCores novaCor) {
-		raiz.setCor(novaCor);
-	}
-
-	public void setDadoSatelite(V novoDadoSatelite) {
-		raiz.setDadoSatelite(novoDadoSatelite);
-	}
-
-	public void setFilhoDireito(RBTreeImpl<K, V> novoFilhoDireito) {
-		raiz.setFilhoDireito(novoFilhoDireito);
-	}
-
-	public void setFilhoEsquerdo(RBTreeImpl<K, V> novoFilhoEsquerdo) {
-		raiz.setFilhoEsquerdo(novoFilhoEsquerdo);
-	}
-
-	public void setPai(RBTreeImpl<K, V> novoPai) {
-		raiz.setPai(novoPai);
-	}
-
-	public static void main(String[] args) throws ADTOverflowException {
+	public static void main(String[] args) throws ADTOverflowException,
+			ADTUnderflowException {
 		RBTreeImpl<Integer, Integer> t = new RBTreeImpl<Integer, Integer>();
-		// RBTreeImpl<Integer, Integer> t1 = new RBTreeImpl<Integer, Integer>();
 
 		boolean ok = t.checkProperties();
-		// t1.verifyProperties();
-		// t.insert(1, 1);
-		// t.insert(14, 14);
-		// t.insert(25, 25);
-		// t.print();
 
 		for (int i = 21; i > -1; i--) {
 			t.insert(i, i);
-			// t1.insert1(i, i);
 			ok = t.checkProperties();
-			// t1.verifyProperties();
 			System.out.println("T :: nos:" + t.size() + " - altura:"
 					+ t.height() + "- RB(" + ok + ")");
-			// System.out.println("T1 :: nos:" + t.size() + " - altura:" +
-			// t.height() + "- RB(" + ok + ")");
 		}
 
-		// t.insert(50, 50);
-		// t1.insert1(50, 50);
-
-//		for (int i = 0; i < 50; i++) {
-//			t.insert(i, i);
-//			// t1.insert1(i, i);
-//			// t.print();
-//			ok = t.checkProperties();
-//			// t1.verifyProperties();
-//			System.out.println("T :: nos:" + t.size() + " - altura:"
-//					+ t.height() + "- RB(" + ok + ")");
-//			// System.out.println("T1 :: nos:" + t.size() + " - altura:" +
-//			// t.height() + "- RB(" + ok + ")");
-//		}
-		
-		
+		for (int i = 0; i < 50; i++) {
+			t.insert(i, i);
+			ok = t.checkProperties();
+			System.out.println("T :: nos:" + t.size() + " - altura:"
+					+ t.height() + "- RB(" + ok + ")");
+		}
 		System.out.println("ARVORE T");
-		//for (int i = 0; i < 20; i++) {
+		for (int i = 1; i < 49; i++) {// COMECA DO 1 POIS UM DA PAL NO
+			// PREDECESSOR
+			System.out.println("sucessor de " + i + ": "
+					+ t.successor(i).getChave() + " - predeecessor: "
+					+ t.predecessor(i).getChave());
 
-			System.out.println("sucessor: " +t.successor(0).getChave());
-			System.out.println("sucessor: " +t.successor(1).getChave());
-			System.out.println("sucessor: " +t.successor(2).getChave());
-			System.out.println("sucessor: " +t.successor(3).getChave());
-			System.out.println("sucessor: " +t.successor(4).getChave());
-			System.out.println("sucessor: " +t.successor(5).getChave());
-			System.out.println("sucessor: " +t.successor(6).getChave());
-			System.out.println("sucessor: " +t.successor(7).getChave());
-			System.out.println("sucessor: " +t.successor(8).getChave());
-			System.out.println("sucessor: " +t.successor(9).getChave());
-			System.out.println("sucessor: " +t.successor(10).getChave());
-			System.out.println("sucessor: " +t.successor(11).getChave());
-			System.out.println("sucessor: " +t.successor(12).getChave());
-			System.out.println("sucessor: " +t.successor(13).getChave());
-			System.out.println("sucessor: " +t.successor(14).getChave());
-			System.out.println("sucessor: " +t.successor(15).getChave());
-			System.out.println("sucessor: " + t.successor(16).getChave());
-			System.out.println("sucessor: " + t.successor(17).getChave());
-			System.out.println("sucessor: " + t.successor(18).getChave());
-			System.out.println("sucessor: " + t.successor(19).getChave());
-			System.out.println("sucessor: " + t.successor(20).getChave());
-			//System.out.println("sucessor: " + t.successor(21));//NAO TEM
-			
-		//}
-		
-		
-		t.toString();
-		// System.out.println("ARVORE T1");
-		// t1.print();
+		}
+		System.out.println("deletando");
+		for (int i = 0; i < 50; i++) {
+			t.delete(i);
+		}
+		System.out.println("buscando");
+		for (int i = 0; i < 50; i++) {
+			System.out.println("buscando " + i + ": " + t.search(i));
+		}
+		System.out.println(t.toString());
 
 		System.out.println("----- PRE-ORDEM--------------");
 		System.out.println(t.preOrder());
 
 	}
-
 }
